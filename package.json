@@ -1,0 +1,19 @@
+{
+  "name": "dow-jones-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "concurrently \"npm run dev --prefix frontend\" \"npm run start:dev --prefix server/dow-jones-api\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.7",
+    "concurrently": "^9.0.1"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7"
+  }
+}

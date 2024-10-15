@@ -1,0 +1,26 @@
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f9f9f9;
+}
+
+.form-container {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    background: #f9f9f9; /* Light background color */
+    border-radius: 10px; /* Slightly larger border radius for smoothness */
+    max-width: 100%;
+    width: 500px;
+    transition: box-shadow 0.3s ease; /* Smooth shadow transition */
+}
+.input{
+    font-weight: 500;
+    color: black;
+}
+
+.form-container:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); /* Slightly darker shadow on hover */
+}
