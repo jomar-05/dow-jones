@@ -6,6 +6,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { Button, Card, Header, Icon, Input, Message, Modal, Pagination, Segment, Table } from 'semantic-ui-react';
 import * as XLSX from 'xlsx';
+import { DownloadLabel } from '../../constant';
 import { FILE_DOWNLOAD_URL } from '../../routes';
 import './style.css'; // Custom CSS for datepicker styles
 
@@ -74,14 +75,15 @@ const DownloadFilePage: React.FC = () => {
     doc.setFontSize(12);
 
     const tableColumn = [
-      "CKYC ID", "First Name", "Last Name", "Middle Name",
+      DownloadLabel.fullName, DownloadLabel.country, DownloadLabel.gender, DownloadLabel.birthDate, DownloadLabel.iconHints,
     ];
 
     const tableRows = displayedUsers.map(user => [
-      user.ckycId,
-      user.firstName,
-      user.lastName,
-      user.middleName,
+      `${user.firstName}  ${user.middleName || ''} ${user.lastName}`,
+      user.countryTerritoryName,
+      user.gender,
+      user.birthDate,
+      user.iconHints,
     ]);
 
     doc.autoTable(tableColumn, tableRows, {
@@ -117,10 +119,11 @@ const DownloadFilePage: React.FC = () => {
 
   const handleDownloadExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(displayedUsers.map(user => ({
-      "CKYC ID": user.ckycId,
-      "First Name": user.firstName,
-      "Last Name": user.lastName,
-      "Middle Name": user.middleName,
+      [DownloadLabel.fullName]: user.firstName + user.middleName || '' + user.lastName,
+      [DownloadLabel.country]: user.countryTerritoryName,
+      [DownloadLabel.gender]: user.gender,
+      [DownloadLabel.birthDate]: user.birthDate,
+      [DownloadLabel.iconHints]: user.iconHints,
     })));
 
     const workbook = XLSX.utils.book_new();
