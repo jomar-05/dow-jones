@@ -1,0 +1,35 @@
+body {
+  margin: 0; /* Remove default margin */
+}
+
+.login-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Full viewport height */
+  background-color: #f0f4f8; /* Light background color */
+  padding-top: 60px; /* Space for fixed header */
+}
+
+.fixed-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px; /* Height of the header */
+  background-color: #4CAF50; /* Header background color */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensure it stays above other content */
+}
+
+.login-container {
+  width: 100%; /* Full width for responsiveness */
+}
+
+.segment {
+  background-color: #ffffff; /* White background for the form */
+  border: none; /* Remove default border */
+}

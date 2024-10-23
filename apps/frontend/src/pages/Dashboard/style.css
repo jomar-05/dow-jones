@@ -1,0 +1,26 @@
+.menu-item {
+  padding: 1rem;
+  transition: background 0.3s, color 0.3s, border 0.3s;
+  font-size: 1.2em; /* Increased font size for menu items */
+  color: #ecf0f1; /* Original light text color */
+}
+
+/* Hover styles for menu items */
+.menu-item:hover {
+  background-color: #fff; /* White background on hover */
+  color: #2c3e50; /* Dark text color on hover */
+  border-left: 4px solid #e74c3c; /* Add a left border */
+}
+
+/* Adjust icon size */
+.icon-off {
+  font-size: 1.5em; /* Increase size of the logout icon */
+}
+
+/* Additional margin for spacing */
+.menu-item {
+  margin-top: 0.5rem; /* Add space above each menu item */
+}
+.logout-btn:hover {
+  box-shadow: 0 4px 8px rgba(223, 215, 215, 1); /* Box shadow on hover */
+}

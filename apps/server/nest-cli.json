@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "webpack": true
+  },
+  "projects": {
+    "dow-jones": {
+      "type": "library",
+      "root": "libs/dow-jones",
+      "entryFile": "index",
+      "sourceRoot": "libs/dow-jones/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/dow-jones/tsconfig.lib.json"
+      }
+    }
+  }
+}
