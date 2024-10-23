@@ -18,7 +18,6 @@ export class FileUploadService {
 
   async handleFile(fileText: string) {
     let c = 0;
-    // Parse the CSV file text to get an array of data
     const arrayOfData = await parseFileCSV(
       JSON.parse(JSON.stringify(fileText))?.text,
     );
