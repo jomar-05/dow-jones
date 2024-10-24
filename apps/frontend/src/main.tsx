@@ -48,7 +48,7 @@ const routes = [
     element: <LoginPage />,
   },
   {
-    path: '/dashboard/',
+    path: '/dashboard',
     element: <Dashboard />,
     loader: checkAuthLoader,
     children: [

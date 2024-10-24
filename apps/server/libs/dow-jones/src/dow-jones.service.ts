@@ -58,6 +58,17 @@ export class DowJonesService {
       data: requestPayload,
     });
 
-    return castDowJonesSearchResponse(resp);
+    return await castDowJonesSearchResponse(resp);
+  }
+
+  public async dowJonesSearchRiskEntitesProfileApi(
+    personId: any,
+  ): Promise<any> {
+    const resp = await this.dowjonesApi.sendRequest({
+      url: `${RISK_ENTITY_ROUTES.PROFILE}/${personId}`,
+      method: 'GET',
+    });
+
+    return resp;
   }
 }

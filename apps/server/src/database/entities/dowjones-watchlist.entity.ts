@@ -8,7 +8,7 @@ export enum Gender {
 @Entity('watchlist')
 export class Watchlist {
   @PrimaryGeneratedColumn() // Auto-incrementing primary key
-  id: number | undefined;
+  id: number; // ID (no need for undefined here)
 
   @Column({ name: 'ckyc_id', type: 'varchar', length: 255, nullable: true })
   ckycId?: string; // KYC ID (optional)
@@ -69,4 +69,7 @@ export class Watchlist {
 
   @Column({ name: 'created_by', type: 'varchar', length: 255, nullable: true })
   createdBy?: string; // Created By (optional)
+
+  @Column({ name: 'remarks', type: 'text', nullable: true })
+  remarks?: string; // Remarks (optional)
 }

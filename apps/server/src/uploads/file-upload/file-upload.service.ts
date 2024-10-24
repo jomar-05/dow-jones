@@ -1,11 +1,13 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DowJonesService } from '@secom/dow-jones/dow-jones.service';
+import { promises as fs } from 'fs';
 import { DowJonesRiskEntityDto } from 'libs/dow-jones/dto';
 import { NameDTO } from 'libs/dow-jones/dto/name.dto';
 import { Watchlist } from 'src/database/entities/dowjones-watchlist.entity';
 import { WatchListRepository } from 'src/entity-repository/watchlist-repository';
-import { parseFileCSV } from '../utils';
+import * as XLSX from 'xlsx';
+import { formatData } from '../utils/formattedData';
 
 @Injectable()
 export class FileUploadService {
@@ -16,115 +18,118 @@ export class FileUploadService {
     private readonly dowjonesService: DowJonesService,
   ) {}
 
-  async handleFile(fileText: string) {
-    let c = 0;
-    const arrayOfData = await parseFileCSV(
-      JSON.parse(JSON.stringify(fileText))?.text,
-    );
-    // Parse the file text to extract email and CSV data
-    const parsedFileText = JSON.parse(JSON.stringify(fileText));
-    const email = JSON.parse(parsedFileText.email).email;
+  async handleFile(file: Express.Multer.File, data: any) {
+    if (!file) {
+      throw new BadRequestException('No file provided');
+    }
 
-    const results = await Promise.all(
-      arrayOfData.map(async (item) => {
-        const ckycId = item.ckyc_id ?? ''; // Extract ckyc_id
-        const lastName = item.last_name ?? '';
-        const firstName = item.first_name ?? '';
-        const middleName = item.middle_name ?? '';
+    try {
+      const userEmail = JSON.parse(data?.email).email;
+      const fileBuffer = await fs.readFile(file.path);
+      const workbook = await XLSX.read(fileBuffer, { type: 'buffer' });
+      const firstSheetName = await workbook.SheetNames[0];
+      const worksheet = await workbook.Sheets[firstSheetName];
+      const jsonData = await XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      const headers = jsonData[0];
+      // Extract data from each row using map
+      const extractedData = jsonData.slice(1).map((row) => {
+        const rowData: Record<string, any> = {};
+        headers.forEach((header, index) => {
+          // Ensure each value is treated as a string
+          rowData[header] = String(row[index] || ''); // Convert to string and handle undefined
+        });
+        return rowData;
+      });
+      // Construct the full path to the file
+      const formattedData = formatData(extractedData);
+      let c = 0;
+      const results = await Promise.all(
+        (await formattedData).map(async (item) => {
+          const ckycId = item.ckyc_id ?? '';
+          const lastName = item.LastName ?? '';
+          const firstName = item.FirstName ?? '';
+          const middleName = item.MiddleName ?? '';
 
-        /*  */
-        const searchResult = await this.searchDowJonesWatchlistApi({
-          lastName,
-          firstName,
-          middleName,
-        });
-        console.log(
-          'Search result:',
-          `${firstName}, ${lastName}, ${middleName}`,
-          searchResult,
-        );
-        console.log('count: ' + ++c);
-        if (!searchResult.length) {
-          return;
-        }
-        const existsToDatabase = await this.isExistsToDatabase({
-          lastName,
-          firstName,
-          middleName,
-        });
-        // checking in local database
-        if (!existsToDatabase) {
-          const arr: any = [];
-          if (!firstName && !lastName) {
+          const searchResultFromDowJones =
+            await this.searchDowJonesWatchlistApi({
+              lastName,
+              firstName,
+              middleName,
+            });
+          console.log(
+            'Search result:',
+            `${firstName}, ${lastName}, ${middleName}`,
+            searchResultFromDowJones,
+          );
+          console.log('count: ' + ++c);
+          if (!searchResultFromDowJones.length) {
             return;
           }
-          try {
-            await this.insertIntoWatchlist(searchResult, {
-              firstName,
-              lastName,
-              middleName,
-              ckycId, // Pass ckycId
-              createdBy: email, // Pass createdBy using email
-            });
-            arr.push({
-              first_name: firstName,
-              last_name: lastName,
-              middle_name: middleName,
-            });
-            return arr;
-          } catch (error) {
-            console.error('Error inserting into watchlist:', error);
-            throw new Error('Failed to insert records into the watchlist');
-          }
-        } else {
-          const watchlistEntries = await this.watchlistRepository.find({
-            where: {
-              firstName,
-              lastName,
-              ckycId,
-            },
+          const existsToDatabase = await this.isExistsToDatabase({
+            lastName,
+            firstName,
+            middleName,
           });
+          // checking in local database
+          if (!existsToDatabase) {
+            const arr: any = [];
+            if (!firstName && !lastName) {
+              return;
+            }
+            try {
+              await this.insertIntoWatchlist(searchResultFromDowJones, {
+                firstName,
+                lastName,
+                middleName,
+                ckycId,
+                createdBy: userEmail,
+              });
+              arr.push({
+                first_name: firstName,
+                last_name: lastName,
+                middle_name: middleName,
+              });
+              return arr;
+            } catch (error) {
+              console.error('Error inserting into watchlist:', error);
+              throw new Error('Failed to insert records into the watchlist');
+            }
+          } else {
+            await this.updateIconHints(searchResultFromDowJones, ckycId);
+          }
+          return {
+            data: item,
+          };
+        }),
+      );
 
-          console.log(watchlistEntries);
-          console.log(watchlistEntries.length);
-        }
-        /* */
+      return results;
+    } catch (error) {
+      throw new BadRequestException(`Error reading file: ${error.message}`);
+    }
+  }
 
-        // const exists = await this.isExistsToDatabase({
-        //   lastName,
-        //   firstName,
-        //   middleName,
-        // });
-
-        // if (!exists) {
-        //   const searchResult = await this.searchDowJonesWatchlistApi({
-        //     lastName,
-        //     firstName,
-        //     middleName,
-        //   });
-        //   console.log(
-        //     'Search result:',
-        //     `${firstName}, ${lastName}, ${middleName}`,
-        //     searchResult,
-        //   );
-
-        //   // Include ckycId and createdBy when inserting into the watchlist
-        //   await this.insertIntoWatchlist(searchResult, {
-        //     firstName,
-        //     lastName,
-        //     middleName,
-        //     ckycId, // Pass ckycId
-        //     createdBy: email, // Pass createdBy using email
-        //   });
-        // }
-
-        return {
-          data: item,
-        };
-      }),
-    );
-
-    return results;
+  private async updateIconHints(resultSearchDowjones: any[], ckycId: string) {
+    const result = resultSearchDowjones.map(async (entry) => {
+      const iconHints = entry?.attributes?.iconHints || [];
+      const iconHintString = iconHints
+        .map((e: any) => e.iconHint)
+        .filter(
+          (hint: string | null) =>
+            typeof hint === 'string' && hint.trim() !== '',
+        )
+        .join(', ');
+      console.log('Icon hints: ' + iconHintString);
+      const query = `CALL watchlist_updateiconhint(?, ?, ?)`;
+      const params = [ckycId, entry.id, iconHintString];
+      console.log('Cheking with parameters:', params);
+      try {
+        await this.watchlistRepository.query(query, params);
+      } catch (error: any) {
+        throw new Error('Error passing data: ' + error.message);
+      }
+    });
+    await Promise.all(result);
   }
 
   private async isExistsToDatabase(data: NameDTO): Promise<number> {
@@ -147,6 +152,12 @@ export class FileUploadService {
     data: NameDTO,
   ): Promise<DowJonesRiskEntityDto[] | []> {
     const result = await this.dowjonesService.dowJonesSearchWatchlistApi(data);
+    return result;
+  }
+
+  async getPersonRemarks(personId: string): Promise<any> {
+    const result =
+      await this.dowjonesService.dowJonesSearchRiskEntitesProfileApi(personId);
     return result;
   }
 
@@ -196,7 +207,7 @@ export class FileUploadService {
       console.log('Icon hints: ' + iconHintString);
 
       const birthDay = `${year}-${month}-${day}`;
-      const query = `CALL dow_jones.watchlist_insert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      const query = `CALL dow_jones.watchlist_insert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)`;
 
       // Log parameters for debugging
       const params = [
@@ -214,6 +225,7 @@ export class FileUploadService {
         iconHintString,
         dowJonesId,
         createdBy,
+        '',
       ];
       console.log('Inserting with parameters:', params);
 

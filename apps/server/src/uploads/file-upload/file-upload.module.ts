@@ -6,10 +6,7 @@ import { FileUploadController } from './file-upload.controller';
 import { FileUploadService } from './file-upload.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Watchlist]),
-    DowJonesModule, // Importing the module that contains DowJonesService
-  ],
+  imports: [TypeOrmModule.forFeature([Watchlist]), DowJonesModule],
   controllers: [FileUploadController],
   providers: [FileUploadService], // Optional: Include if using directly
 })

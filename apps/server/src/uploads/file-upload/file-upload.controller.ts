@@ -1,6 +1,14 @@
-import { Body, Controller, Post, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { NameDTO } from 'libs/dow-jones/dto/name.dto';
+import { diskStorage } from 'multer';
 import { FileUploadService } from './file-upload.service';
 
 @Controller('upload')
@@ -8,19 +16,32 @@ export class FileUploadController {
   constructor(private readonly fileUploadService: FileUploadService) {}
 
   @Post('file')
-  @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(@Body() data: string) {
-    return this.fileUploadService.handleFile(data);
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          const uniqueSuffix = `${Date.now()}-${file.originalname}`;
+          cb(null, uniqueSuffix);
+        },
+      }),
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5mb
+      },
+    }),
+  )
+  async uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    @Body() data: any,
+  ) {
+    const result = await this.fileUploadService.handleFile(file, data);
+    return result;
   }
 
-  // @Post('test')
-  // @UseInterceptors(FileInterceptor('file'))
-  // async uploadFile(@Body() data: string) {
-  //   return this.fileUploadService.handleFile(data);
-  // }
-
-  @Post('')
-  async upload(@Body() data: NameDTO) {
-    return await this.fileUploadService.searchDowJonesWatchlistApi(data);
+  @Get('person/:personId')
+  async getPersonRemarks(@Param('personId') personId: string) {
+    const result = await this.fileUploadService.getPersonRemarks(personId);
+    return result;
   }
 }

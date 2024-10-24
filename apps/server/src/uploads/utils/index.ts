@@ -1,1 +1,1 @@
-export * from './parseFileCSV';
+export * from './formattedData';
