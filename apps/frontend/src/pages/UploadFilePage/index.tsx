@@ -158,7 +158,7 @@ const FileUpload: React.FC = () => {
       setError('Upload was canceled.');
     } else if (error?.response) {
       console.error('Server error:', error?.response?.data);
-      setError(`Error: ${error?.response?.data?.message || 'Upload failed.'}`);
+      setError(`Error: ${error?.response?.data?.message +". Please try again." || 'Upload failed.'}`);
     } else if (error?.code === 'ECONNABORTED') {
       console.error('Request timeout:', error?.message);
       setError('Error: The request timed out. Please try again.');
@@ -183,9 +183,9 @@ const FileUpload: React.FC = () => {
   };
 
   return (
-    <div className='file-upload-page' style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
+    <div className='file-upload-page' style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',}}>
       <div style={{ maxWidth: '400px', width: '100%', padding: '20px' }}>
-        <Card fluid style={{ transition: 'box-shadow 0.3s ease', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <Card fluid style={{ transition: 'box-shadow 0.3s ease', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <Segment placeholder style={{ padding: '2rem', flex: 1 }}>
             <Header as="h2" icon style={{ color: '#4CAF50', cursor: 'pointer', textAlign: 'center' }} onClick={handleIconClick}>
               <Icon name="upload" />

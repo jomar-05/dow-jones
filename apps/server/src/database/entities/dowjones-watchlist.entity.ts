@@ -11,16 +11,16 @@ export class Watchlist {
   id: number; // ID (no need for undefined here)
 
   @Column({ name: 'ckyc_id', type: 'varchar', length: 255, nullable: true })
-  ckycId?: string; // KYC ID (optional)
+  ckyc_id?: string; // KYC ID (optional)
 
   @Column({ name: 'last_name', type: 'varchar', length: 100, nullable: true })
-  lastName?: string; // Last Name (optional)
+  last_name?: string; // Last Name (optional)
 
   @Column({ name: 'first_name', type: 'varchar', length: 100, nullable: true })
-  firstName?: string; // First Name (optional)
+  first_name?: string; // First Name (optional)
 
   @Column({ name: 'middle_name', type: 'varchar', length: 100, nullable: true })
-  middleName?: string; // Middle Name (optional)
+  middle_name?: string; // Middle Name (optional)
 
   @Column({
     name: 'primary_name',
@@ -28,7 +28,7 @@ export class Watchlist {
     length: 255,
     nullable: true,
   })
-  primaryName?: string; // Primary Name (optional)
+  primary_name?: string; // Primary Name (optional)
 
   @Column({ name: 'title', type: 'varchar', length: 100, nullable: true })
   title?: string; // Title (optional)
@@ -39,7 +39,7 @@ export class Watchlist {
     length: 5,
     nullable: true,
   })
-  countryTerritoryCode?: string; // Country/Territory Code (optional)
+  country_territory_code?: string; // Country/Territory Code (optional)
 
   @Column({
     name: 'country_territory_name',
@@ -47,7 +47,7 @@ export class Watchlist {
     length: 100,
     nullable: true,
   })
-  countryTerritoryName?: string; // Country/Territory Name (optional)
+  country_territory_name?: string; // Country/Territory Name (optional)
 
   @Column({ type: 'enum', enum: Gender, nullable: true })
   gender?: Gender; // Gender (optional)
@@ -56,19 +56,19 @@ export class Watchlist {
   score?: number; // Score (optional)
 
   @Column({ name: 'birth_date', type: 'varchar', length: 100, nullable: true })
-  birthDate?: string; // Birth Date (optional)
+  birth_date?: string; // Birth Date (optional)
 
   @Column({ name: 'icon_hints', type: 'varchar', length: 255, nullable: true })
-  iconHints?: string; // Icon Hints (optional)
+  icon_hints?: string; // Icon Hints (optional)
 
   @Column({ name: 'dow_jones_id', type: 'int', nullable: true })
-  dowJonesId?: number; // Dow Jones ID (optional)
+  dow_jones_id?: number; // Dow Jones ID (optional)
 
   @Column({ name: 'created_date', type: 'datetime', nullable: true })
-  createdDate?: Date; // Created Date (optional)
+  created_date?: Date; // Created Date (optional)
 
   @Column({ name: 'created_by', type: 'varchar', length: 255, nullable: true })
-  createdBy?: string; // Created By (optional)
+  created_by?: string; // Created By (optional)
 
   @Column({ name: 'remarks', type: 'text', nullable: true })
   remarks?: string; // Remarks (optional)

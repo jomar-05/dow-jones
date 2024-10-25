@@ -18,7 +18,7 @@ export class FileUploadService {
     private readonly dowjonesService: DowJonesService,
   ) {}
 
-  async handleFile(file: Express.Multer.File, data: any) {
+  async handleFile(file: Express.Multer.File, data: any): Promise<any> {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
@@ -155,23 +155,28 @@ export class FileUploadService {
     return result;
   }
 
-  async getPersonRemarks(personId: string): Promise<any> {
+  async getPersonRemarks(personId: string): Promise<string | any> {
     const result =
       await this.dowjonesService.dowJonesSearchRiskEntitesProfileApi(personId);
-    return result;
+    if (result && result?.attributes) {
+      return result?.attributes?.watchlist?.comment_details?.si_comment;
+    }
+    return '';
   }
 
   async insertIntoWatchlist(
     results: unknown[],
     fullName: NameDTO & { ckycId: string; createdBy: string },
-  ): Promise<unknown[]> {
+  ): Promise<any[]> {
     if (!results.length) {
+      return []; // Return early if there are no results
     }
 
     const { firstName, lastName, middleName, ckycId, createdBy } = fullName;
 
     const insertPromises = results.map(async (person) => {
       if (!person?.attributes) {
+        console.warn('Skipping person with missing attributes:', person);
         return; // Skip if attributes are missing
       }
 
@@ -196,6 +201,18 @@ export class FileUploadService {
       };
       const dowJonesId = person.id;
 
+      // Fetch remarks for the person
+      let personRemarks = '';
+      try {
+        personRemarks = await this.getPersonRemarks(dowJonesId);
+      } catch (error) {
+        console.error(
+          'Error fetching person remarks for ID:',
+          dowJonesId,
+          error,
+        );
+      }
+
       const iconHints = attributes?.iconHints || [];
       const iconHintString = iconHints
         .map((e: any) => e.iconHint)
@@ -207,7 +224,21 @@ export class FileUploadService {
       console.log('Icon hints: ' + iconHintString);
 
       const birthDay = `${year}-${month}-${day}`;
-      const query = `CALL dow_jones.watchlist_insert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)`;
+      const checkQuery = `SELECT COUNT(*) FROM dow_jones.watchlist WHERE dow_jones_id = ? AND ckyc_id = ?`;
+      const insertQuery = `CALL dow_jones.watchlist_insert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+      // Check if the record already exists
+      const existingCount = await this.watchlistRepository.query(checkQuery, [
+        dowJonesId,
+        ckycId,
+      ]);
+
+      if (existingCount[0]['COUNT(*)'] > 0) {
+        console.log(
+          `Record with dowJonesId ${dowJonesId} and ckycId ${ckycId} already exists. Skipping insert.`,
+        );
+        return; // Skip the insert if it already exists
+      }
 
       // Log parameters for debugging
       const params = [
@@ -225,13 +256,14 @@ export class FileUploadService {
         iconHintString,
         dowJonesId,
         createdBy,
-        '',
+        personRemarks,
       ];
       console.log('Inserting with parameters:', params);
 
       try {
-        await this.watchlistRepository.query(query, params);
+        await this.watchlistRepository.query(insertQuery, params);
       } catch (error: any) {
+        console.error('Error inserting data for ID:', dowJonesId, error);
         throw new Error('Error inserting data: ' + error.message);
       }
     });

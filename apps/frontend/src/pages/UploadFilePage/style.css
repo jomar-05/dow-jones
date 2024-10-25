@@ -7,7 +7,6 @@ body {
   flex-direction: column;
   justify-content: center; /* Center vertically */
   align-items: center; /* Center horizontally */
-  height: 100vh; /* Full viewport height */
   background-color: #f0f4f8; /* Light background color */
 }
 

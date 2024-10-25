@@ -34,7 +34,7 @@ export class FileUploadController {
     @UploadedFile() file: Express.Multer.File,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     @Body() data: any,
-  ) {
+  ): Promise<any> {
     const result = await this.fileUploadService.handleFile(file, data);
     return result;
   }
