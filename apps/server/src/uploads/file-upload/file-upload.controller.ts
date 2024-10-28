@@ -8,9 +8,9 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { promises as fs } from 'fs';
 import { diskStorage } from 'multer';
 import { FileUploadService } from './file-upload.service';
-
 @Controller('upload')
 export class FileUploadController {
   constructor(private readonly fileUploadService: FileUploadService) {}
@@ -36,6 +36,13 @@ export class FileUploadController {
     @Body() data: any,
   ): Promise<any> {
     const result = await this.fileUploadService.handleFile(file, data);
+    if (result) {
+      try {
+        await fs.unlink(file.path);
+      } catch (error) {
+        throw error;
+      }
+    }
     return result;
   }
 

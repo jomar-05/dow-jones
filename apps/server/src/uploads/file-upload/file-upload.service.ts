@@ -49,7 +49,9 @@ export class FileUploadService {
           const lastName = item.LastName ?? '';
           const firstName = item.FirstName ?? '';
           const middleName = item.MiddleName ?? '';
-
+          if (!lastName && !firstName) {
+            return;
+          }
           const searchResultFromDowJones =
             await this.searchDowJonesWatchlistApi({
               lastName,

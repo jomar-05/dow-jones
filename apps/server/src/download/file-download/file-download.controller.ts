@@ -8,8 +8,8 @@ export class FileDownloadController {
 
   @Get('watchlist')
   async downloadWatchlist(
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 5,
+    @Query('page') page: number = 3,
+    @Query('limit') limit: number = 1000,
     @Res() res: Response,
   ) {
     try {
@@ -42,14 +42,13 @@ export class FileDownloadController {
 
     // Log the request for debugging
     console.log('Received request with query:', query);
-
     try {
       // Pass the structured object to the service
       const result = await this.fileDownloadService.requestWatchlistData(
         { userRequestName: { firstName, lastName, middleName } },
-        query.createdDate,
         query.offset,
         query.limit,
+        query.createdDate,
       );
       return result;
     } catch (error) {

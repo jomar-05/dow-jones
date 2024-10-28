@@ -28,9 +28,9 @@ export class FileDownloadService {
 
   async requestWatchlistData(
     userRequest: any,
-    createdDate?: string,
     offset: number = 0,
-    limit: number = 100,
+    limit: number = 1000000,
+    createdDate?: string,
   ): Promise<any[] | []> {
     // Check if userRequest or createdDate are defined
     if (!userRequest && !createdDate) {
@@ -72,7 +72,6 @@ export class FileDownloadService {
       return watchlistEntries[0] || [];
     }
 
-    // If only names are provided, fetch by name
     const query = `
     CALL watchlist_getbyname(?, ?, ?, ?, ?)
   `;

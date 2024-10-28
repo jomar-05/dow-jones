@@ -43,52 +43,72 @@ const FileUpload: React.FC = () => {
     }
   };
 
-  // Combined function to read files and validate headers
-  const readFileAndValidate = (file: Blob): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
+// Combined function to read files and validate headers
+const readFileAndValidate = (file: Blob): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader(); // Create a new FileReader instance
 
-      reader.onload = (event) => {
-        let csvData: string;
+    reader.onload = (event) => {
+      let csvData: string; // Variable to hold the CSV data
 
-        const fileType = file.type;
-        const fileName = file.name;
+      const fileType = file.type; // Get the MIME type of the file
+      const fileName = file.name; // Get the name of the file
 
-        try {
-          if (fileType.includes('sheet') || fileType.includes('excel') || 
-              fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
-            // Read Excel file
-            const data = new Uint8Array(event.target?.result as ArrayBuffer);
-            const workbook = XLSX.read(data, { type: 'array' });
-            const firstSheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[firstSheetName];
-            csvData = XLSX.utils.sheet_to_csv(worksheet);
-          } else if (fileType === 'text/csv' || fileName.endsWith('.csv')) {
-            // Read CSV file
-            csvData = event.target?.result as string;
-          } else {
-            reject(new Error('Unsupported file type. Please upload a CSV or Excel file.'));
-            return;
-          }
-
-          // Validate headers
-          const validationResult = validateRequiredHeaders(csvData);
-          if (validationResult.isValid) {
-            resolve(csvData); 
-          } else {
-            setModalOpen(true); 
-            setHeaderFormatModalOpen(true);
-            reject(new Error('Header validation failed.'));
-          }
-        } catch (error) {
-          reject(new Error('Error processing file: ' + error.message));
+      try {
+        // Check if the file is an Excel file
+        if (fileType.includes('sheet') || fileType.includes('excel') || 
+            fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+          // Read Excel file using XLSX library
+          const data = new Uint8Array(event.target?.result as ArrayBuffer);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0]; // Get the first sheet name
+          const worksheet = workbook.Sheets[firstSheetName]; // Get the first sheet
+          csvData = XLSX.utils.sheet_to_csv(worksheet); // Convert the sheet to CSV format
+        } 
+        else if (fileType === 'text/csv' || fileName.endsWith('.csv')) {
+          csvData = event.target?.result as string; // Read CSV file as string
+        } 
+        else {
+          reject(new Error('Unsupported file type. Please upload a CSV or Excel file.'));
+          return;
         }
-      };
+        const rows = csvData.trim().split('\n');
+        const validRows = rows.filter(row => {
+          const trimmedRow = row.trim();
+          // Regex to exclude empty rows or rows with only commas
+          return trimmedRow !== '' && !/^,+$/.test(trimmedRow); // Exclude if only commas
+        });
 
-      reader.onerror = () => reject(new Error('File reading error.'));
-      reader.readAsArrayBuffer(file); // Read as ArrayBuffer to handle both formats
-    });
-  };
+        const validRowCount = validRows.length-1; // Count valid rows
+         const ROWS_NUMBER = 500;
+        console.log(validRowCount)
+        if (validRowCount > ROWS_NUMBER) {
+          setModalOpen(true)
+          setError(`The file exceeds the limit of ${ROWS_NUMBER} valid rows with data.`)
+          reject(new Error(`The file exceeds the limit of ${ROWS_NUMBER} valid rows with data.`));
+          return; // Exit if the limit is exceeded
+        }
+
+        // Validate headers using a custom validation function
+        const validationResult = validateRequiredHeaders(csvData);
+        if (validationResult.isValid) {
+          resolve(csvData); // Resolve the promise with the valid CSV data
+        } else {
+          // Open modal for header format errors
+          setModalOpen(true); 
+          setHeaderFormatModalOpen(true);
+          reject(new Error('Header validation failed.')); // Reject if headers are invalid
+        }
+      } catch (error) {
+        // Catch any errors during file processing
+        reject(new Error('Error processing file: ' + error.message));
+      }
+    };
+
+    reader.onerror = () => reject(new Error('File reading error.')); // Handle file reading errors
+    reader.readAsArrayBuffer(file); // Read the file as ArrayBuffer to handle both formats
+  });
+};
 
   // Function to validate required headers
   const validateRequiredHeaders = (csvString: string): { isValid: boolean; errors: string[] } => {

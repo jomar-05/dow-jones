@@ -50,3 +50,7 @@
   background-color: rgba(0, 123, 255, 0.5); /* Highlight for keyboard selection */
   color: white; /* Highlight text color */
 }
+
+.person{
+  cursor: pointer;
+}
