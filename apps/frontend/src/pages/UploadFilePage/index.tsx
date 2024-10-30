@@ -4,6 +4,7 @@ import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import { Button, Card, Divider, Header, Icon, Label, Modal, Segment } from 'semantic-ui-react';
 import * as XLSX from 'xlsx';
+import { ButtonCustomized } from '../../components/Button';
 import { FILE_UPLOAD_URL } from '../../routes';
 import './style.css';
 
@@ -11,7 +12,7 @@ const FileUpload: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [progress, setProgress] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [status, setModalStatus] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [headerFormatModalOpen, setHeaderFormatModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -31,14 +32,14 @@ const FileUpload: React.FC = () => {
     return fileExtension ? validExtensions.includes(`.${fileExtension}`) : false;
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0] || null;
     if (selectedFile && isValidFileType(selectedFile)) {
       setFile(selectedFile);
       setProgress(0);
-      setError(null);
+      setModalStatus(null);
     } else {
-      setError('Please upload a valid Excel or CSV file.');
+      setModalStatus('Please upload a valid Excel or CSV file.');
       setFile(null);
     }
   };
@@ -80,11 +81,11 @@ const readFileAndValidate = (file: Blob): Promise<string> => {
         });
 
         const validRowCount = validRows.length-1; // Count valid rows
-         const ROWS_NUMBER = 500;
+        const ROWS_NUMBER = 1000;
         console.log(validRowCount)
         if (validRowCount > ROWS_NUMBER) {
           setModalOpen(true)
-          setError(`The file exceeds the limit of ${ROWS_NUMBER} valid rows with data.`)
+          setModalStatus(`The file exceeds the limit of ${ROWS_NUMBER} valid rows with data.`)
           reject(new Error(`The file exceeds the limit of ${ROWS_NUMBER} valid rows with data.`));
           return; // Exit if the limit is exceeded
         }
@@ -136,13 +137,13 @@ const readFileAndValidate = (file: Blob): Promise<string> => {
 
   const handleUpload = async () => {
     if (!file) {
-      setError('No file selected. Please choose a file to upload.');
+      setModalStatus('No file selected. Please choose a file to upload.');
       setModalOpen(true); // Open modal on error
       return;
     }
 
     setLoading(true);
-    setError(null);
+    setModalStatus(null);
     setProgress(0);
 
     try {
@@ -164,6 +165,8 @@ const readFileAndValidate = (file: Blob): Promise<string> => {
 
       setProgress(100);
       console.log('Upload successful:', response.data);
+      setModalOpen(true);
+      setModalStatus('Process Completed.');
       resetForm(); // Reset the form after a successful upload
     } catch (error) {
       handleError(error);
@@ -175,16 +178,16 @@ const readFileAndValidate = (file: Blob): Promise<string> => {
   const handleError = (error: any) => {
     if (axios.isCancel(error)) {
       console.error('Upload canceled:', error?.message);
-      setError('Upload was canceled.');
+      setModalStatus('Upload was canceled.');
     } else if (error?.response) {
       console.error('Server error:', error?.response?.data);
-      setError(`Error: ${error?.response?.data?.message +". Please try again." || 'Upload failed.'}`);
+      setModalStatus(`Error: ${error?.response?.data?.message +".Please close the file before you upload and if error still exists again later."}`);
     } else if (error?.code === 'ECONNABORTED') {
       console.error('Request timeout:', error?.message);
-      setError('Error: The request timed out. Please try again.');
+      setModalStatus('Error: The request timed out. Please try again.');
     } else {
       console.error('Network error:', error?.message);
-      setError(`Error: ${error?.message}`);
+      setModalStatus(`Error: ${error?.message}`);
     }
     setModalOpen(true); // Open modal on error
     resetForm()
@@ -257,24 +260,24 @@ const readFileAndValidate = (file: Blob): Promise<string> => {
           open={modalOpen}
           onClose={() => {
             setModalOpen(false);
-            setError(null);
+            setModalStatus(null);
           }}
           size="tiny"
           closeIcon
         >
-          <Modal.Header>Error</Modal.Header>
+          <Modal.Header>Status</Modal.Header>
           <Modal.Content>
-            <p>{error}</p>
+            <p>{status}</p>
             {headerFormatModalOpen && (
-              <Button onClick={() => setHeaderFormatModalOpen(true)} primary>
-                View Required Header Format
-              </Button>
+              <ButtonCustomized onClick={() => setHeaderFormatModalOpen(true)} primary>
+                 View Required Header Format
+              </ButtonCustomized>
             )}
           </Modal.Content>
           <Modal.Actions>
-            <Button onClick={() => setModalOpen(false)} primary>
-              Close
-            </Button>
+              <ButtonCustomized onClick={() => setModalOpen(false)} primary>
+                 Close
+              </ButtonCustomized>
           </Modal.Actions>
         </Modal>
 
@@ -297,9 +300,9 @@ const readFileAndValidate = (file: Blob): Promise<string> => {
             <p>Ensure that these headers are present in the first row of your CSV or Excel file.</p>
           </Modal.Content>
           <Modal.Actions>
-            <Button onClick={() => setHeaderFormatModalOpen(false)} primary>
+            <ButtonCustomized onClick={() => setHeaderFormatModalOpen(false)} primary>
               Close
-            </Button>
+            </ButtonCustomized>
           </Modal.Actions>
         </Modal>
       </div>

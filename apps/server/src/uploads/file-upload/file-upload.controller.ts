@@ -26,7 +26,7 @@ export class FileUploadController {
         },
       }),
       limits: {
-        fileSize: 5 * 1024 * 1024, // 5mb
+        fileSize: 2 * 1024 * 1024, // 2mb
       },
     }),
   )
@@ -36,6 +36,7 @@ export class FileUploadController {
     @Body() data: any,
   ): Promise<any> {
     const result = await this.fileUploadService.handleFile(file, data);
+    console.log('completed');
     if (result) {
       try {
         await fs.unlink(file.path);

@@ -22,7 +22,6 @@ export class FileUploadService {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
-
     try {
       const userEmail = JSON.parse(data?.email).email;
       const fileBuffer = await fs.readFile(file.path);
@@ -93,6 +92,11 @@ export class FileUploadService {
               });
               return arr;
             } catch (error) {
+              try {
+                await fs.unlink(file.path);
+              } catch (error) {
+                throw error;
+              }
               console.error('Error inserting into watchlist:', error);
               throw new Error('Failed to insert records into the watchlist');
             }
@@ -107,6 +111,11 @@ export class FileUploadService {
 
       return results;
     } catch (error) {
+      try {
+        await fs.unlink(file.path);
+      } catch (error) {
+        throw error;
+      }
       throw new BadRequestException(`Error reading file: ${error.message}`);
     }
   }

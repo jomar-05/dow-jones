@@ -4,8 +4,9 @@ import 'jspdf-autotable';
 import React, { useCallback, useEffect, useState } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { Button, Card, Icon, Input, Loader, Message, Modal, Pagination, Popup, Radio, Segment, Table, TextArea } from 'semantic-ui-react';
+import { Card, Icon, Input, Loader, Message, Modal, Pagination, Popup, Radio, Segment, Table, TextArea } from 'semantic-ui-react';
 import * as XLSX from 'xlsx';
+import { ButtonCustomized } from '../../components/Button';
 import { DownloadLabel } from '../../constant';
 import { FILE_REQUEST_DATA_URL } from '../../routes';
 import './style.css';
@@ -265,36 +266,33 @@ useEffect(() => {
               onChange={(e) => setRequestByMiddleName(e.target.value)}
               placeholder='Enter middle name...'
             />
-            <Button primary onClick={handleRequestData} loading={isRequesting}>
-              Search
-          </Button>
+          <ButtonCustomized primary onClick={handleRequestData} loading={isRequesting}>
+            Search
+          </ButtonCustomized>
           </div>
         )}
         {!isFullNameSelected && (
           <>
-          <DatePicker
-            selected={requestByDate}
-            onChange={handleDateChange(setRequestByDate)}
-            dateFormat="yyyy-MM-dd"
-            placeholderText="Request by Created Date"
-            className="custom-datepicker"
-            isClearable
-          />
-          <Button primary style={{marginLeft:"1rem"}} onClick={handleRequestData} loading={isRequesting}>
-          Search
-        </Button>
+            <DatePicker
+              selected={requestByDate}
+              onChange={handleDateChange(setRequestByDate)}
+              dateFormat="yyyy-MM-dd"
+              placeholderText="Request by Created Date"
+              className="custom-datepicker"
+              isClearable
+            />
+            <ButtonCustomized primary style={{marginLeft:"1rem"}} onClick={handleRequestData} loading={isRequesting}>
+              Search
+            </ButtonCustomized>
           </>
         )}
       </div>
         <div style={{ display: 'flex', justifyContent: 'flex-start', maxWidth: '100%', width:'100%' }}>
-          <Button 
-            primary 
-            style={{ marginTop: '.2rem', width: 'auto' }} 
-            onClick={() => setIsModalOpen(paginatedUsers.length > 0)}
-          >
-            <Icon name="download" />
-            Download
-          </Button>
+          <ButtonCustomized primary style={{ marginTop: '.2rem', width: 'auto' }} 
+            onClick={() => setIsModalOpen(paginatedUsers.length > 0)} loading={isRequesting}>
+               <Icon name="download" />
+                 Download
+          </ButtonCustomized>   
       </div>
       <Card fluid style={{ maxWidth: '2040px', width: '100%', marginTop: '1rem', heigt:'100vh'}}>
         <Segment>
@@ -376,7 +374,9 @@ useEffect(() => {
                         )}
                   </Modal.Content>
                   <Modal.Actions>
-                    <Button onClick={() => setModalPersonRemarks(false)}>Close</Button>
+                    <ButtonCustomized onClick={() => setModalPersonRemarks(false)}>
+                        Close
+                    </ButtonCustomized>
                   </Modal.Actions>
                 </Modal></>
             )}
@@ -433,8 +433,12 @@ useEffect(() => {
           </Segment>
         </Modal.Content>
         <Modal.Actions>
-          <Button onClick={() => setIsModalOpen(false)}>Cancel</Button>
-          <Button primary onClick={handleDownload}>Download</Button>
+          <ButtonCustomized onClick={() => setIsModalOpen(false)}>
+              Cancel
+          </ButtonCustomized>
+          <ButtonCustomized primary onClick={handleDownload}>
+              Download
+          </ButtonCustomized>
         </Modal.Actions>
       </Modal>
     </div>

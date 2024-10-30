@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Form, Header, Input, Message, Segment } from 'semantic-ui-react';
+import { Form, Header, Input, Message, Segment } from 'semantic-ui-react';
+import { ButtonCustomized } from '../../components/Button';
 import { AUTH_URL } from '../../routes';
 import './style.css';
 
@@ -83,14 +84,9 @@ function LoginPage() {
               />
             </Form.Field>
             {error && <Message negative>{error}</Message>}
-            <Button
-              primary
-              loading={loading}
-              type='submit'
-              style={{ width: '100%', borderRadius: '5px', fontSize: '1.1rem' }}
-            >
-              Submit
-            </Button>
+            <ButtonCustomized primary loading={loading} type='submit' style={{ width: '100%', borderRadius: '5px', fontSize: '1.1rem' }}>
+                Submit
+            </ButtonCustomized>
           </Form>
         </Segment>
       </div>
