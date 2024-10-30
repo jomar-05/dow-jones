@@ -16,7 +16,7 @@ const FileUpload: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [headerFormatModalOpen, setHeaderFormatModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const email = localStorage.getItem('token') || '';
+  const userCredentials = localStorage.getItem('token') || '';
 
   // Prevent scrolling when the component mounts
   useEffect(() => {
@@ -152,10 +152,14 @@ const readFileAndValidate = (file: Blob): Promise<string> => {
 
       // Proceed with file upload
       const formData = new FormData();
-      formData.append('email', email);
+      formData.append('email', userCredentials);
       formData.append('file', file);
 
       const response = await axios.post(FILE_UPLOAD_URL, formData, {
+    //         headers: {
+    //     'Content-Type': 'application/json',
+    //     'Authorization': `Bearer ${JSON.parse(userCredentials)?.token}` // Include the token in the Authorization header
+    // },
         onUploadProgress: ({ loaded, total }) => {
           const percent = Math.round((loaded * 100) / (total || 1));
           setProgress(percent);

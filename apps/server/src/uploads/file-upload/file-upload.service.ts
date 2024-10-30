@@ -129,7 +129,7 @@ export class FileUploadService {
           (hint: string | null) =>
             typeof hint === 'string' && hint.trim() !== '',
         )
-        .join(', ');
+        .join(',');
       console.log('Icon hints: ' + iconHintString);
       const query = `CALL watchlist_updateiconhint(?, ?, ?)`;
       const params = [ckycId, entry.id, iconHintString];
