@@ -19,6 +19,7 @@ export class FileUploadService {
   ) {}
 
   async handleFile(file: Express.Multer.File, data: any): Promise<any> {
+    let counterLogs = 0;
     if (!file) {
       throw new BadRequestException('No file provided');
     }
@@ -41,7 +42,6 @@ export class FileUploadService {
       });
       // Construct the full path to the file
       const formattedData = formatData(extractedData);
-      let c = 0;
       const results = await Promise.all(
         (await formattedData).map(async (item) => {
           const ckycId = item.ckyc_id ?? '';
@@ -57,12 +57,13 @@ export class FileUploadService {
               firstName,
               middleName,
             });
+          counterLogs++;
           console.log(
             'Search result:',
             `${firstName}, ${lastName}, ${middleName}`,
             searchResultFromDowJones,
           );
-          console.log('count: ' + ++c);
+          console.log('count: ' + counterLogs);
           if (!searchResultFromDowJones.length) {
             return;
           }
@@ -108,7 +109,7 @@ export class FileUploadService {
           };
         }),
       );
-
+      console.log('counter logs completed: ' + counterLogs);
       return results;
     } catch (error) {
       try {
@@ -116,6 +117,7 @@ export class FileUploadService {
       } catch (error) {
         throw error;
       }
+      console.log('counter logs error stop: ' + counterLogs);
       throw new BadRequestException(`Error reading file: ${error.message}`);
     }
   }
@@ -280,5 +282,18 @@ export class FileUploadService {
     });
 
     return await Promise.all(insertPromises);
+  }
+
+  private async insertLogsCalling(numberOfCalling: number, userEmail: string) {
+    const insertLogsQuery = `CALL dow_jones.watchlist_counts(?, ?)`;
+    try {
+      const result = await this.watchlistRepository.query(insertLogsQuery, [
+        numberOfCalling,
+        userEmail,
+      ]);
+      console.log('result: ' + result);
+    } catch (error) {
+      throw new error();
+    }
   }
 }
